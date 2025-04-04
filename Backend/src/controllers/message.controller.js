@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js"
 import cloudinary from "../lib/cloudinary.js";
+import { getReceiverSocketId, io } from "../lib/socket.js";
 
 export const getUserForSidebar= async (req, res)=>{
     try {
@@ -43,7 +44,7 @@ export const sendMessage= async (req,res)=>{
         let imageUrl
         if(image){
             //upload base64 image to cloudinary middleware
-            const uploadResponse = await cloudinary.uploader(image)
+            const uploadResponse = await cloudinary.uploader.upload(image, {folder: "chatImages"})
             imageUrl= uploadResponse.secure_url;
         }
 
@@ -55,7 +56,10 @@ export const sendMessage= async (req,res)=>{
         })
         await newMessage.save()
 
-        // todo: realtime functionality with socket io
+        const recieverSocketId= getReceiverSocketId(recieverId)
+        if(recieverSocketId) {
+            io.to(recieverSocketId).emit("newMessage", newMessage)
+        }
 
         res.status(201).json(newMessage)
 
