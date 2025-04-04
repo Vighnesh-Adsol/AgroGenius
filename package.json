@@ -1,0 +1,22 @@
+{
+  "name": "project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build":"npm install --prefix Backend && npm install --prefix Frontend && npm run build --prefix Frontend",
+    "start":"npm run start --prefix Backend"
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://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@github.com/Vighnesh-Adsol/farmly.ai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Vighnesh-Adsol/farmly.ai/issues"
+  },
+  "homepage": "https://github.com/Vighnesh-Adsol/farmly.ai#readme"
+}
