@@ -1,3 +1,4 @@
+// filepath: Frontend/src/components/ChatContainer.jsx
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef } from "react";
 
@@ -20,13 +21,15 @@ const ChatContainer = () => {
   const messageEndRef = useRef(null);
 
   useEffect(() => {
-    getMessages(selectedUser._id);
-
+    if (selectedUser === "AI") {
+        getMessages("AI");
+    } else {
+        getMessages(selectedUser?._id);
+    }
     subscribeToMessages();
 
     return () => unsubscribeFromMessages();
-  }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
-
+  }, [selectedUser, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
   //for auto scroll to bottom
   useEffect(() => {
@@ -53,7 +56,7 @@ const ChatContainer = () => {
         {messages.map((message) => (
           <div
             key={message._id}
-            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
+            className={`chat ${message.senderId === authUser._id ? "chat-end" : message.senderId === "AI" ? "chat-start bg-green-100" : "chat-start"}`}
             ref={messageEndRef}
           >
             <div className=" chat-image avatar">
@@ -62,7 +65,7 @@ const ChatContainer = () => {
                   src={
                     message.senderId === authUser._id
                       ? authUser.profilePic || "/avatar.png"
-                      : selectedUser.profilePic || "/avatar.png"
+                      : selectedUser?.profilePic || "/avatar.png"
                   }
                   alt="profile pic"
                 />

@@ -1,3 +1,4 @@
+// filepath: Frontend/src/store/useChatStore.js
 import {create} from 'zustand'
 import toast from "react-hot-toast";
 import {axiosInstance} from "../lib/axios.js"
@@ -14,7 +15,7 @@ export const useChatStore= create ((set, get) => ({
     getUsers: async () => {
         set({ isUsersLoading: true });
         try {
-            const res = await axiosInstance.get("/messages/users");
+            const res = await axiosInstance.get("/api/messages/users");
             set({ users: res.data });
         } catch (error) {
             console.log("Error in getting users", error);
@@ -26,7 +27,7 @@ export const useChatStore= create ((set, get) => ({
     getMessages: async (userId) => {
         set({ isMessagesLoading: true });
         try {
-            const res = await axiosInstance.get(`/messages/${userId}`);
+            const res = await axiosInstance.get(`/api/messages/${userId}`);
             set({ messages: res.data });
         } catch (error) {
             console.log("Error in getting messages", error);
@@ -37,14 +38,23 @@ export const useChatStore= create ((set, get) => ({
     },
 
     sendMessage: async (messageData) => {
-        const {selectedUser, messages} =get()
+        const { selectedUser, messages } = get();
         try {
-            const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-            
-            set({ messages:[...messages,res.data] });
-            
+            let res;
+            if (selectedUser === "AI") {
+                res = await axiosInstance.post(`/api/ai/generate`, messageData);
+                set({ messages: [...messages, { ...messageData, senderId: "user" }, res.data] });
+            } else {
+                res = await axiosInstance.post(`/api/messages/send/${selectedUser._id}`, messageData);
+                set({ messages: [...messages, res.data] });
+            }
         } catch (error) {
-            toast.error(error.response.data.message);
+            console.error("Error sending message:", error);
+            if (error.code === "ERR_BAD_REQUEST" && error.response?.status === 413) {
+                toast.error("Image size is too large");
+            } else {
+                toast.error(error.response?.data?.message || "Failed to send message");
+            }
         }
     },
 
@@ -75,5 +85,11 @@ export const useChatStore= create ((set, get) => ({
     },
 
 
-    setSelectedUser: (selectedUser) => set({ selectedUser }),
+    setSelectedUser: (selectedUser) => {
+        if (selectedUser === "AI") {
+            set({ selectedUser: "AI" });
+        } else {
+            set({ selectedUser });
+        }
+    },
 }))
